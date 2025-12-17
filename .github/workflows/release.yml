@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  MAKEFLAGS: -j2
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.50
+
+      - name: Build Native BusyBox
+        run: make $MAKEFLAGS build/native/busybox
+
+      - name: Build Wasm BusyBox
+        run: make $MAKEFLAGS build/wasm/busybox_unstripped.js
+
+      - name: Prepare Release Assets
+        run: |
+          mkdir -p release
+          cp build/native/busybox release/busybox-linux-x86_64
+          cp build/wasm/busybox_unstripped.js release/busybox.js
+          cp build/wasm/busybox_unstripped.wasm release/busybox.wasm
+          cd release && sha256sum * > checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/busybox-linux-x86_64
+            release/busybox.js
+            release/busybox.wasm
+            release/checksums.txt
+          generate_release_notes: true

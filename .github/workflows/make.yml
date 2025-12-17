@@ -1,26 +1,42 @@
-name: make
+name: Build
 
-on: workflow_dispatch
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
 
 env:
-  URL_BUSYBOX: https://busybox.net/downloads/busybox-1.32.0.tar.bz2
-  URL_MINIZ: https://github.com/richgel999/miniz/releases/download/2.1.0/miniz-2.1.0.zip
-  URL_DIFF3: https://raw.githubusercontent.com/openbsd/src/master/usr.bin/diff3/diff3prog.c
   MAKEFLAGS: -j2
 
 jobs:
-  make:
-    runs-on: ubuntu-20.04
+  build:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v7
-        with:
-          version: 2.0.5
+      - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v2
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.50
 
       - name: Build Native BusyBox
-        run: make $MAKEFLAGS build/native/busybox URL_BUSYBOX=$URL_BUSYBOX URL_MINIZ=$URL_MINIZ URL_DIFF3=$URL_DIFF3
+        run: make $MAKEFLAGS build/native/busybox
 
       - name: Build Wasm BusyBox
-        run: make $MAKEFLAGS build/wasm/busybox_unstripped.js URL_BUSYBOX=$URL_BUSYBOX URL_MINIZ=$URL_MINIZ URL_DIFF3=$URL_DIFF3
+        run: make $MAKEFLAGS build/wasm/busybox_unstripped.js
+
+      - name: Upload Native Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: busybox-native
+          path: build/native/busybox
+
+      - name: Upload Wasm Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: busybox-wasm
+          path: |
+            build/wasm/busybox_unstripped.js
+            build/wasm/busybox_unstripped.wasm
