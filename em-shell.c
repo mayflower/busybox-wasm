@@ -8,8 +8,11 @@ jmp_buf vfork_jump_buffer;
 static int vfork_child_active = 0;
 static int vfork_child_pid = 0;
 
-int js_fork();
-void js_unfork(int status);
+// JS function declarations - implemented in em-shell.js
+extern int js_fork(void);
+extern void js_unfork(int status);
+extern int js_spawn(const char *file, char *const argv[]);
+
 int em_vfork(int is_parent) {
     if (is_parent) {
         vfork_child_active = 0;
@@ -31,7 +34,6 @@ void em_exit(int status) {
         _exit(status);
 }
 
-int js_spawn(const char *file, char *const argv[]);
 int em_execvp(const char *file, char *const argv[]) {
     errno = js_spawn(file, argv);
     if (errno)
