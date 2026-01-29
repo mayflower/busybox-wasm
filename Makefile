@@ -28,6 +28,6 @@ build/wasm/busybox_unstripped.js: source/busybox.tar.bz2 source/miniz.zip source
 	cp nanozip.c build/wasm/archival && unzip -d build/wasm/archival -o source/miniz.zip miniz.h miniz.c
 	cat diff3.h > build/wasm/editors/diff3.c && sed 's/main/diff3_main/g' source/diff3prog.c >> build/wasm/editors/diff3.c
 	cp .config build/wasm
-	echo 'cmd_busybox__ = $$(CC) -o $$@.js -Wl,--start-group -sERROR_ON_UNDEFINED_SYMBOLS=0 -sALLOW_MEMORY_GROWTH=1 -sSUPPORT_LONGJMP=emscripten -O2 $(CURDIR)/em-shell.c -include $(CURDIR)/em-shell.h --js-library $(CURDIR)/em-shell.js $$(CFLAGS) $$(CFLAGS_busybox) $$(LDFLAGS) $$(EM_LDFLAGS) $$(EXTRA_LDFLAGS) $$(core-y) $$(libs-y) $$(patsubst %,-l%,$$(subst :, ,$$(LDLIBS))) -Wl,--end-group && cp $$@.js $$@' > build/wasm/arch/em/Makefile
+	echo 'cmd_busybox__ = $$(CC) -o $$@.js -Wl,--start-group -sERROR_ON_UNDEFINED_SYMBOLS=0 -sALLOW_MEMORY_GROWTH=1 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=BusyBoxModule -sEXPORTED_RUNTIME_METHODS=callMain,FS -sFORCE_FILESYSTEM=1 -sENVIRONMENT=web,worker -sSUPPORT_LONGJMP=emscripten -O2 $(CURDIR)/em-shell.c -include $(CURDIR)/em-shell.h --js-library $(CURDIR)/em-shell.js $$(CFLAGS) $$(CFLAGS_busybox) $$(LDFLAGS) $$(EM_LDFLAGS) $$(EXTRA_LDFLAGS) $$(core-y) $$(libs-y) $$(patsubst %,-l%,$$(subst :, ,$$(LDLIBS))) -Wl,--end-group && cp $$@.js $$@' > build/wasm/arch/em/Makefile
 	echo '#!/bin/sh' > build/wasm/emgcc && echo 'exec emcc "$$@"' >> build/wasm/emgcc && chmod +x build/wasm/emgcc
 	PATH=$(CURDIR)/build/wasm:$$PATH $(MAKE) -C build/wasm ARCH=em CROSS_COMPILE=em SKIP_STRIP=y

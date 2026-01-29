@@ -16,6 +16,12 @@ Pre-built binaries are available on the [Releases](https://github.com/mayflower/
 
 Requires [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html) for WASM builds.
 
+### Deno runner
+
+The WASM build is emitted as an ES module (MODULARIZE + EXPORT_ES6) so it can be used directly in Deno.
+The helper in `deno/busybox_runner.ts` loads `busybox.js`/`busybox.wasm` and exposes a simple `run()` API.
+`busybox.js`/`busybox.wasm` are expected to live next to the runner in releases or your build output.
+
 ```shell
 # native version
 make build/native/busybox
